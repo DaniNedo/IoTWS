@@ -4,8 +4,8 @@
 /* 	Mayo 2018									*/
 /*==============================================*/
 
-//Al cargar el documento ejecutamos el siguiente script
-document.onload = function () {
+//Cuando el documento esté listo ejecutamos el siguiente script
+document.onready = function () {
 	//Creamos dos vectores que almacenen los puntos que aparecen en las gráficas
 	var tempPoints = [];
 	var humPoints = [];
