@@ -1,0 +1,48 @@
+/*==========================================*/
+/*	Hoja de estilos para el proyecto IoTWS	*/
+/*	Por Daniel Nedosseikine para MakersUPV	*/
+/* 	Mayo 2018								*/
+/*==========================================*/
+
+/*Class logo*/
+.logo {
+    height: auto;		/*Altura automática*/
+    width: 40%;			/*Anchura al 40%*/
+    min-width: 150px;	/*Anchura mínima de 150px*/
+}
+
+/*Modificación del class logo para móviles, solo se aplica para resoluciones menores de 1000px*/
+@media only screen and (min-width: 1000px) {
+    .logo {
+        max-width: 250px;	/*Anchura máxima 250px*/
+    }
+}
+
+/*Class content*/
+.content {
+    width: 90%;						/*Anchura al 90%*/
+    min-width:400px;				/*Anchura mínima 400px*/
+	max-width:1500px;				/*Anchura máxima 1500px*/
+    margin: 30px auto 10px auto;	/*Margen 30px arriba, derecha auto, 10px abajo, izquierada auto*/
+    position: relative;
+}
+
+/*Class menu*/
+.menu {
+    position:absolute;	/*Posición absoluta dentro del div padre*/
+	bottom: 0;			/*Distancia 0 desde el borde inferior del div padre*/
+	right: 0;			/*Distancia 0 desde la derecha del div padre*/
+}
+
+/*Modificación del class menu*/
+@media only screen and (max-width: 1000px) {
+    .menu {
+        font-size: 35px;	/*Tamaño de fuente 35px*/
+    }
+}
+
+/*Class line*/
+.line {
+    border-bottom: 2px solid;	/*Borde inferior sólido de 2px de grosor*/
+    border-color: #009fe3;		/*Color del borde azul claro, en HEX*/
+}

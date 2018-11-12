@@ -1,0 +1,118 @@
+<!DOCTYPE HTML>
+
+<!--
+/*==============================================*/
+/*	Archivo HTML para el proyecto IoTWS			*/
+/*	Por Daniel Nedosseikine para MakersUPV		*/
+/* 	Mayo 2018									*/
+/*==============================================*/
+-->
+
+<html>
+
+	<!--Encabezado del documento, aquí se incluyen los enlaces los distintos recursos-->
+	<head>
+
+		<!--Link a libreria CSS de Paco Presencia, miembro de MakersUPV-->
+		<link href="https://unpkg.com/picnic" rel="stylesheet">
+
+		<!--Link a nuestra hoja de estilos CSS-->
+		<link href="/css/style.css" rel="stylesheet">
+
+		<!--Link a recurso online para el display de gráficas: CanvasJS-->
+		<script src="https://canvasjs.com/assets/script/canvasjs.min.js"></script>
+
+		<!--Link a libreria AJAX de Google-->
+		<script src="//ajax.googleapis.com/ajax/libs/jquery/1.8.1/jquery.min.js"></script>
+
+		<!--Link a nuestro archivo js-->
+		<script src="/js/displaydata.js"></script>
+
+	</head>
+
+	<!--Cuerpo del documento, aquí se incluye el contenido a mostrar-->
+	<body>
+
+		<!--Div para centrar el contenido en medio de la página. Ref: style.css-->
+		<div class="content">
+
+			<div>
+				<!--Logotipo a la derecha de la página. Ref: style.css-->
+				<img src="/images/logo iot.png" class="logo">
+			</div>
+			
+			<!--Div para crear un menu a una misma altura. Ref: style.css-->
+			<div class="menu">
+			
+				<!--Span que contiene un enlace. Estilo aplicado directamente-->
+				<span style="margin-right:20px">
+				
+					<!--Enlace: href="URL", target="donde_queremos_que_se_habra_la_página"-->
+					<a href="https://github.com/DaniNedo/IoTWS" target="_blank">
+						Documentación
+					</a>
+				</span>
+				
+				<!--Span que contiene un enlace-->
+				<span>
+				
+					<!--Enlace: href="URL", target="donde_queremos_que_se_habra_la_página"-->
+					<a href="https://makersupv.com" target="_blank">	
+						MakersUPV
+					</a>
+				</span>
+			</div>
+		</div>
+		
+		<!--Div separador-->
+		<div class="line"></div>
+
+		<!--Div para centrar el contenido en medio de la página. Ref: style.css-->
+		<div class="content">
+
+			<!--Div contenedor. Ref: picnic.css-->
+			<div class="flex four">
+			
+				<!--Div que mide 100% y 25% a partir de resoluciondes de 1000px y estilo aplicado directamente. Ref: picnic.css-->
+				<div class="full fourth-1000" style="padding-top: 50px">
+				
+					<!--Tarjeta. Ref: picninc.css-->
+					<article class="card">
+						<header>
+						<!--Párrafo cuyo contenido se modifica dinámicamente. Ref: displaydata.js-->
+						<p id="voltage"></p>
+						</header>
+					</article>
+					
+					<!--Tarjeta. Ref: picninc.css-->
+					<article class="card">
+						<header>
+							<!--Párrafo cuyo contenido se modifica dinámicamente. Ref: displaydata.js-->
+							<p id="temp"></p>
+						</header>
+					</article>
+					
+					<!--Tarjeta. Ref: picninc.css-->
+					<article class="card">
+						<header>
+							<!--Párrafo cuyo contenido se modifica dinámicamente. Ref: displaydata.js-->
+							<p id="hum"></p>
+						</header>
+					</article>
+				</div>
+				
+				<!--Div que mide 100% y 75% a partir de resoluciondes de 1000px. Ref: picnic.css-->
+				<div class="full three-fourth-1000">
+				
+					<!--Div que contiene a la gráfica de temperatura. Ref: canvasjs.com, ajax-google, displaydata.js-->
+					<div id="tempChart" style="height: 300px; margin: 10px 0px 0px 50px;"></div>
+					
+					<!--Div que contiene a la gráfica de humedad. Ref: canvasjs.com, ajax-google, displaydata.js-->
+					<div id="humChart" style="height: 300px; margin: 10px 0px 0px 50px;"></div>
+				</div>
+			</div>
+		</div>
+		
+	</body>
+	
+</html>
