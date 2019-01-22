@@ -1,7 +1,7 @@
 /*==============================================*/
 /*  Firmware para el proyecto IoTWS
 /*  Por Daniel Nedosseikine para MakersUPV
-/*  Mayo 2018
+/*  Enero 2019
 /*==============================================*/
 
 //Incluimos las librerías necesarias
@@ -18,10 +18,13 @@ ADC_MODE(ADC_VCC);
 #define DHT_PIN 2
 #define PORT 80
 
+//Para el funcionamiento final del código no nos hace
+//falta el modo debug. Descomentar si se necesita este modo.
+//#define DEBUG
+
 //Creamos un campo personalizado para poder introducir
 //nuestro host desde el móvil
 WiFiManagerParameter hostName("host","Host", "", 40);
-//WiFiManagerParameter serverPort("port", "Port", "", 2);
 
 //Creamos el objeto dht basado en la clase DHTesp
 DHTesp dht;
@@ -36,10 +39,12 @@ String params = "";
 //Creamos la función setup, que se ejecuta una sola vez tras
 //el encendido del microcontrolador
 void setup() {
-  //Solo debugg
-  Serial.begin(115200);
-  Serial.println("\n Starting");
-  Serial.println("\n ADC Mode set");
+  //Mostramos un mensaje por el monitor serie
+  #ifdef DEBUG
+    Serial.begin(115200);
+    Serial.println("\n Encendido");
+    Serial.println("\n Modo ADC");
+  #endif
 
   //Definimos el pin 0 como una entrada (aquí va conectado el botón)
   pinMode(SETUP_PIN, INPUT);
@@ -67,21 +72,26 @@ void WiFiSetUp(){
   if (!wifiManager.startConfigPortal("IoTWS_Setup")) {
 
     //Si no lo conseguimos reiniciamos el microcontrolador
-    Serial.println("failed to connect and hit timeout");
+    #ifdef DEBUG
+      Serial.println("Fallo al conectar");
+    #endif
+
     delay(3000);
     ESP.reset();
     delay(5000);
   }
-  //Debug
-  Serial.println("connected...yeey :)");
+
+  #ifdef DEBUG
+    Serial.println("Conectado!");
+  #endif
 
   //Copiamos el nombre del host a la variable creada antes
   host = hostName.getValue();
 
-  //Debug
-  Serial.print("Host: ");
-  Serial.println(host);
-
+  #ifdef DEBUG
+    Serial.print("Host: ");
+    Serial.println(host);
+  #endif
 }
 
 //Creamos una función que actualiza las mediciones
@@ -99,7 +109,9 @@ bool getData(void){
   //Si alguno de los valores no es un número
   //entonces ha habido un fallo, devolvemos un 0
   if (isnan(temp) || isnan(hum)) {
-    Serial.println("Failed to read from DHT sensor!");
+    #ifdef DEBUG
+      Serial.println("Fallo al leer del sensor");
+    #endif
     return false;
   }
 
@@ -115,21 +127,25 @@ void postData(void){
 
   //Intentamos establecer la conexión con el servidor
   if (!client.connect(host, PORT)) {
-    //Debug
-    Serial.println("connection failed");
-    Serial.println("wait 5 sec...");
-    delay(10000);
+
+    #ifdef DEBUG
+      Serial.println("Fallo de conexion con el servidor");
+      Serial.println("Esperamos 5 segundos");
+    #endif
+
+    delay(5000);
     return;
   }
-  //Debug
-  Serial.println("Succesfully connected to server");
-  // This will send the request to the server
-  Serial.print("GET /php/postdata.php?");
-  Serial.print(params);
-  Serial.println(" HTTP/1.1");
-  Serial.print("HOST: ");
-  Serial.println(host);
-  Serial.print("\n\n");
+
+  #ifdef DEBUG
+    Serial.println("Conexión con el servidor establecida");
+    Serial.print("GET /php/postdata.php?");
+    Serial.print(params);
+    Serial.println(" HTTP/1.1");
+    Serial.print("HOST: ");
+    Serial.println(host);
+    Serial.print("\n\n");
+  #endif
 
   //Generamos una petición HTTP básica
   client.print("GET /php/postdata.php?");
@@ -150,7 +166,11 @@ void postData(void){
   while (client.available() == 0) {
     //Si pasan más de 5 segundos es que ha habido un fallo
     if (millis() - timeout > 5000) {
-      Serial.println(">>> Client Timeout !");
+
+      #ifdef DEBUG
+        Serial.println("Sobrepasado tiempo de espera");
+      #endif
+
       client.stop();
       return;
     }
@@ -161,8 +181,10 @@ void postData(void){
   //completar la comunicación Cliente-Servidor
   while(client.available()){
     String line = client.readStringUntil('\r');
-    //Debug
-    Serial.print(line);
+
+    #ifdef DEBUG
+      Serial.print(line);
+    #endif
   }
 
   //Nos desconectamos del servidor

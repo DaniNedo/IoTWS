@@ -1,7 +1,8 @@
 /*==============================================*/
-/*	Archivo JavaScript para el proyecto IoTWS	*/
-/*	Por Daniel Nedosseikine para MakersUPV		*/
-/* 	Mayo 2018									*/
+/*	Archivo JavaScript para el proyecto IoTWS
+/*	Por Jaime Laborda Macario y
+/*  Daniel Nedosseikine para MakersUPV		
+/* 	Enero 2019
 /*==============================================*/
 
 //Cuando el documento esté listo ejecutamos el siguiente script
