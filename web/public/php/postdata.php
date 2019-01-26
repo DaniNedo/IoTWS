@@ -16,7 +16,6 @@
 	$temperature = $_GET['temperature'];
 	$humidity = $_GET['humidity'];
 	$voltage = $_GET['voltage'];
-	$sendmail = $_GET['sendMail'];
 
 	/*Generamos una petición SQL que inserta los datos en la base de datos*/
 	$query = "INSERT INTO weatherlog (`time`,`temperature`,`humidity`,`voltage`) VALUES ('$date','$temperature','$humidity','$voltage')";
@@ -32,12 +31,4 @@
 	/*Cerramos la conexión con la base de datos*/
 	mysqli_close($conn);
 
-	/*Si la variable sendmail vale 1, enviamos un correo de alerta*/
-	if($sendmail == 1){
-		$to = $config['email'];
-		$subject = "Alerta de esp8266!";
-		$msg = "La batería de su dispostivo esp8266 está muy baja ($voltage V).\nConsidere cambiar la batería o su dispositivo se apagará :(";
-
-		mail($to,$subject,$msg);
-	}
 ?>
