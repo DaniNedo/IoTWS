@@ -7,20 +7,19 @@
 //Incluimos las librerías necesarias
 #include <ESP8266WiFi.h>
 #include <WiFiManager.h>
+#include <EEPROM.h>
 #include <DHTesp.h>
 
 //Establecemos un modo que nos permite leer el voltaje de entrada
 ADC_MODE(ADC_VCC);
 
 //Definimos varias constantes
-#define MIN_VOLT 2.75
-#define SETUP_PIN 0
 #define DHT_PIN 2
 #define PORT 80
 
 //Para el funcionamiento final del código no nos hace
 //falta el modo debug. Descomentar si se necesita este modo.
-//#define DEBUG
+#define DEBUG
 
 //Creamos un campo personalizado para poder introducir
 //nuestro host desde el móvil
@@ -30,63 +29,89 @@ WiFiManagerParameter hostName("host","Host", "", 40);
 DHTesp dht;
 
 //Creamos las variables necesarias, en este caso globales
-const char* host = "";
+String host = "";
 float volt;
 float temp;
 float hum;
 String params = "";
 
-//Creamos la función setup, que se ejecuta una sola vez tras
-//el encendido del microcontrolador
-void setup() {
-  //Mostramos un mensaje por el monitor serie
-  #ifdef DEBUG
-    Serial.begin(115200);
-    Serial.println("\n Encendido");
-    Serial.println("\n Modo ADC");
-  #endif
+//Creamos la función writeToEEPROM que nos permite grabar datos 
+//en la memoria EEPROM
+void writeToEEPROM(char addr, String data)
+{
+  //Guardamos byte a byte el String que se ha pasado a la función
+  int _size = data.length();
+  for(int i=0;i<_size;i++)
+  {
+    EEPROM.write(addr + i, data[i]);
+  }
+  //Añadimos el caracter nulo
+  EEPROM.write(addr + _size,'\0');
+  EEPROM.commit();
+}
 
-  //Definimos el pin 0 como una entrada (aquí va conectado el botón)
-  pinMode(SETUP_PIN, INPUT);
+//Creamos la función readFromEEPROM que nos permite leer datos
+//de la memoria EEPROM
+String readFromEEPROM(char add)
+{
+  //Leemos la información hasta llegar al caracter nulo
+  int i;
+  char data[100]; 
+  int len=0;
+  unsigned char k;
+  k=EEPROM.read(add);
+  while(k != '\0' && len<500)
+  {    
+    k=EEPROM.read(add+len);
+    data[len]=k;
+    len++;
+  }
+  data[len]='\0';
+  //Devolvemos el String generado
+  return String(data);
+}
 
-  //Inicializamos el sensor DHT especificando el pin y el modelo
-  //Nota: el modelo solo es DHT11, con DHTesp::DHT11 accedemos a
-  //un parámetro público de la case DHTesp llamado DHT11
-  dht.setup(DHT_PIN, DHTesp::DHT11);
+//Creamos la función saveHost, que guardará el nombre de nuestro host
+//que hemos introducido desde la plataforma de configuración
+void saveHost(){
+  
+  //Copiamos el nombre del host en la variable host
+  host = hostName.getValue();
+  //Guardamos el nombre del host en la memoria EEPROM
+  writeToEEPROM(0, host);
 }
 
 //Creamos la función WifiSetUp, esta función nos permitirá configurar
 //los parametros necesarios para la conexión WiFi desde el móvil
-void WiFiSetUp(){
+void WiFiSetup(){
 
   //Creamos el objeto wifimanager derivado de la clase WiFiManager
   WiFiManager wifiManager;
-
+ 
+  //wifiManager.resetSettings();
+  
   //Añadimos el campo del host a la configuración
   wifiManager.addParameter(&hostName);
 
   //Configuramos un tiempo máximo que el portal estara abierto
   wifiManager.setTimeout(120);
 
-  //Intentamos abrir una red WiFI con el nombre IotWS_Setup
-  if (!wifiManager.startConfigPortal("IoTWS_Setup")) {
+  //Si la configuración WiFi cambia llamaremos a la función saveHost
+  wifiManager.setSaveConfigCallback(saveHost);
 
-    //Si no lo conseguimos reiniciamos el microcontrolador
-    #ifdef DEBUG
-      Serial.println("Fallo al conectar");
-    #endif
-
-    delay(3000);
-    ESP.reset();
-    delay(5000);
-  }
+  //Incovamos la función autoConnect, que tratará de conectarse a una
+  //red WiFi utilizando las credenciales previamente guardadas
+  //(si existen). En caso de no poderse conectar, se abrira el portal
+  //de configuración WiFi.
+  wifiManager.autoConnect("IoTWS_Setup");
 
   #ifdef DEBUG
     Serial.println("Conectado!");
   #endif
-
-  //Copiamos el nombre del host a la variable creada antes
-  host = hostName.getValue();
+  delay(100);
+  
+  //Recuperamos el nombre del host desde la memoria EEPROM
+  host = readFromEEPROM(0);
 
   #ifdef DEBUG
     Serial.print("Host: ");
@@ -120,7 +145,7 @@ bool getData(void){
 }
 
 //Creamos una función que manda los datos al servidor
-void postData(void){
+bool postData(void){
 
   //Creamos el objeto client derivado de la clase WiFiClient
   WiFiClient client;
@@ -134,7 +159,7 @@ void postData(void){
     #endif
 
     delay(5000);
-    return;
+    return false;
   }
 
   #ifdef DEBUG
@@ -172,7 +197,7 @@ void postData(void){
       #endif
 
       client.stop();
-      return;
+      return false;
     }
   }
 
@@ -189,25 +214,39 @@ void postData(void){
 
   //Nos desconectamos del servidor
   client.stop();
+  return true;
 }
 
-//Creamos la función principal que se ejecutará continuamente
+//Creamos la función setup, que se ejecuta una sola vez tras
+//el encendido del microcontrolador
+void setup() {
+  //Mostramos un mensaje por el monitor serie
+  #ifdef DEBUG
+    Serial.begin(115200);
+    Serial.println("\n Encendido");
+    Serial.println("\n Modo ADC");
+  #endif
+
+  //Inicializamos la memoria EEPROM
+  EEPROM.begin(512);
+
+  //Inicializamos el sensor DHT especificando el pin y el modelo
+  //Nota: el modelo solo es DHT11, con DHTesp::DHT11 accedemos a
+  //un parámetro público de la case DHTesp llamado DHT11
+  dht.setup(DHT_PIN, DHTesp::DHT11);
+
+  //Invocamos la función WiFiSetup
+  WiFiSetup();
+}
+
+//Creamos la función principal que tratará de recopilar y subir los 
+//datos al servidor
 void loop() {
-
-  //Comprobamos si hay que entrar en modo configuración
-  if(digitalRead(SETUP_PIN) == LOW){
-    WiFiSetUp();
-  }
-
   //Si el host está vacío es que no hemos establecido la configuración
   if(host == ""){
     delay(100);
     return;
   }
-
-  //Creamos una variable para saber si enviar la notificación
-  //de batería baja
-  bool sendMail = true;
 
   //Comprobamos si obtenemos las mediciones correctamente
   if(getData()){
@@ -218,29 +257,16 @@ void loop() {
     params += "&humidity=" + String(hum, 2);
     params += "&voltage=" + String(volt, 2);
 
-    //Comprobamos si el voltaje es inferior al mínimo
-    //y si ya hemos enviado una notificiación
-    if(sendMail == true && volt < MIN_VOLT){
-      sendMail = false;
-      params += "&sendMail=1";
-    }
-    else{
-      params += "&sendMail=0";
-    }
-
-    //Si el voltaje vuelve a ser mayor que el mínimo
-    //permitímos el envío de nuevas notificiaciones
-    if(volt >= MIN_VOLT){
-    sendMail = true;
-    }
-
     //Subimos los datos al servidor
-    postData();
+    if(postData()){
 
-    delay(20000);
-    //Serial.println("Going into deep sleep for 20 seconds");
-    //Ponemos el ESP en modo deepSleep durante 20 minutos
-    //ESP.deepSleep(20e6); // 20e6 is 20 microseconds
+      #ifdef DEBUG
+        Serial.println("Entrando en modo Deep Sleep durante 10 minutos");
+      #endif
+      //Ponemos el ESP en modo Deep Sleep durante 10 minutos
+      //Hay que indicar el periodo en microsegundos
+      ESP.deepSleep(10e8);
+    }
   }
-
+  delay(1);
 }
