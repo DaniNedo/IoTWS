@@ -19,7 +19,7 @@ ADC_MODE(ADC_VCC);
 
 //Para el funcionamiento final del código no nos hace
 //falta el modo debug. Descomentar si se necesita este modo.
-#define DEBUG
+//#define DEBUG
 
 //Creamos un campo personalizado para poder introducir
 //nuestro host desde el móvil
@@ -258,15 +258,14 @@ void loop() {
     params += "&voltage=" + String(volt, 2);
 
     //Subimos los datos al servidor
-    if(postData()){
+    postData();
 
-      #ifdef DEBUG
-        Serial.println("Entrando en modo Deep Sleep durante 10 minutos");
-      #endif
-      //Ponemos el ESP en modo Deep Sleep durante 10 minutos
-      //Hay que indicar el periodo en microsegundos
-      ESP.deepSleep(10e8);
-    }
+    #ifdef DEBUG
+      Serial.println("Entrando en modo Deep Sleep durante 10 minutos");
+    #endif
+    //Ponemos el ESP en modo Deep Sleep durante 10 minutos
+    //Hay que indicar el periodo en microsegundos
+    ESP.deepSleep(6e8); //10 * 60 * 1000000
   }
   delay(1);
 }
